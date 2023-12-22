@@ -1,46 +1,42 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
-#include <string.h>
 
-int main(int argc, char *argv[])
-{
-	FILE *stream;
-	char *line = NULL;
-	size_t len = 0;
-	long long flag = 1, divi, rest, num, count;
-	ssize_t nread;
-
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <file>\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-
-	stream = fopen(argv[1], "r");
-	if (stream == NULL) {
-		perror("fopen");
-		exit(EXIT_FAILURE);
-	}
-
-	while ((nread = getline(&line, &len, stream)) != -1) {
-		flag = 1, divi = 2;
-		num = atoll(line);
-		while (flag) {
-			rest = num % divi;
-			if (!rest) {
-				count = num / divi;
-				printf("%lld=%lld*%lld\n", num, count, divi);
-				flag = 0;
-			}
-			divi++;
-		}
-	}
-
-	free(line);
-	fclose(stream);
-	exit(EXIT_SUCCESS);
+void factorize_number(int n) {
+    int i;
+    for (i = 2; i <= sqrt(n); i++) {
+        if (n % i == 0) {
+            printf("%d=%d*%d\n", n, i, n / i);
+            return;
+        }
+    }
+    printf("%d=%d*%d\n", n, n, 1);
 }
+
+void factorize_file(const char* file_path) {
+    FILE* file = fopen(file_path, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error: Unable to open file '%s'\n", file_path);
+        exit(EXIT_FAILURE);
+    }
+
+    int number;
+    while (fscanf(file, "%d", &number) == 1) {
+        factorize_number(number);
+    }
+
+    fclose(file);
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <file>\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    const char* file_path = argv[1];
+    factorize_file(file_path);
+
+    return EXIT_SUCCESS;
+}
+
